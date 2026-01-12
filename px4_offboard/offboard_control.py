@@ -48,9 +48,9 @@ from px4_msgs.msg import VehicleStatus
 class OffboardControl(Node):
 
     def __init__(self):
-        super().__init__('minimal_publisher')
+        super().__init__('coordinate_publisher')
 
-                # QoS profiles
+        # QoS profiles
         qos_profile_pub = QoSProfile(
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
             durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
@@ -94,8 +94,6 @@ class OffboardControl(Node):
 
     def vehicle_status_callback(self, msg):
         # TODO: handle NED->ENU transformation
-        print("NAV_STATUS: ", msg.nav_state)
-        print("  - offboard status: ", VehicleStatus.NAVIGATION_STATE_OFFBOARD)
         self.nav_state = msg.nav_state
         self.arming_state = msg.arming_state
 
@@ -107,15 +105,15 @@ class OffboardControl(Node):
         offboard_msg.velocity=False
         offboard_msg.acceleration=False
         self.publisher_offboard_mode.publish(offboard_msg)
-        if (self.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD and self.arming_state == VehicleStatus.ARMING_STATE_ARMED):
+        
+        # Always publish trajectory setpoints regardless of flight mode
+        trajectory_msg = TrajectorySetpoint()
+        trajectory_msg.position[0] = self.radius * np.cos(self.theta)
+        trajectory_msg.position[1] = self.radius * np.sin(self.theta)
+        trajectory_msg.position[2] = -self.altitude
+        self.publisher_trajectory.publish(trajectory_msg)
 
-            trajectory_msg = TrajectorySetpoint()
-            trajectory_msg.position[0] = self.radius * np.cos(self.theta)
-            trajectory_msg.position[1] = self.radius * np.sin(self.theta)
-            trajectory_msg.position[2] = -self.altitude
-            self.publisher_trajectory.publish(trajectory_msg)
-
-            self.theta = self.theta + self.omega * self.dt
+        self.theta = self.theta + self.omega * self.dt
 
 
 def main(args=None):
