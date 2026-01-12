@@ -26,7 +26,6 @@ setup(
     entry_points={
         'console_scripts': [
                 'offboard_control = px4_offboard.offboard_control:main',
-                'visualizer = px4_offboard.visualizer:main',
         ],
     },
 )

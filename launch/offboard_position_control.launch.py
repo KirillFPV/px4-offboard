@@ -58,15 +58,6 @@ def generate_launch_description():
         Node(
             package='px4_offboard',
             namespace=namespace,
-            executable='visualizer',
-            name='visualizer',
-            parameters=[
-                {'namespace': namespace}
-            ]
-        ),
-        Node(
-            package='px4_offboard',
-            namespace=namespace,
             executable='offboard_control',
             name='control',
             parameters= [
@@ -76,7 +67,6 @@ def generate_launch_description():
                 {'namespace': namespace}
             ]
         ),
-        OpaqueFunction(function=launch_setup),
     ])
 
 def patch_rviz_config(original_config_path, namespace):
